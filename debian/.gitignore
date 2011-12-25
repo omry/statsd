@@ -1,0 +1,5 @@
+files
+statsd.*debhelper
+statsd.debhelper.log
+statsd.substvars
+statsd/

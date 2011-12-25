@@ -1,5 +1,5 @@
 {
   graphitePort: 2003
-, graphiteHost: "localhost"
+, graphiteHost: "carbon"
 , port: 8125
 }
