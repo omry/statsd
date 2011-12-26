@@ -1,4 +1,4 @@
-statsd (0.0.1+nmu1) unstable; urgency=low
+statsd (0.0.2) unstable; urgency=low
 
   * Added support for configurable key patterns
 
