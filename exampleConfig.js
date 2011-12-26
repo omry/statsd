@@ -14,10 +14,25 @@ Optional Variables:
   flushInterval:    interval (in ms) to flush to Graphite
   percentThreshold: for time information, calculate the Nth percentile
                     [%, default: 90]
+patterns:
+  all patterns are optional (default values are reasonable).
+  patterns may contain special variables which are replaced by actual data:
+    ${hostname} : will be replaced by the reversed hostname, if the hostname is www.example.com, the ${hostname} variable will be replaced by com.example.www
+    ${key}      : key provided by client library
+
+  stats_pattern:		pattern used when creating user data keys, for example servers.${hostname}.${key}
+  stats_timers_pattern:	pattern used when creating timer keys, for example "servers.${hostname}.timers.${key}"
+  statsd_pattern:		pattern used when creating keys used for statsd statistics, for example "servers.${hostname}.statsd.${key}"
+  stats_count_pattern:	pattern used when creting keys used for stats counters, for example servers.${hostname}.stats_count.${key}
 
 */
+
 {
-  graphitePort: 2003
-, graphiteHost: "graphite.host.com"
-, port: 8125
+  graphitePort          : 2003
+, graphiteHost : "carbon"
+, port : 8125
+, stats_pattern         : "servers.${hostname}.${key}"
+, stats_timers_pattern  : "servers.${hostname}.timers.${key}"
+, statsd_pattern        : "servers.${hostname}.statsd.${key}"
+, stats_count_pattern   : "servers.${hostname}.stats_count.${key}"
 }

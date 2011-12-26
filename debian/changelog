@@ -1,3 +1,9 @@
+statsd (0.0.1+nmu1) unstable; urgency=low
+
+  * Added support for configurable key patterns
+
+ -- Omry Yadan <omry@face.com>  Mon, 26 Dec 2011 14:37:47 +0000
+
 statsd (0.0.1) unstable; urgency=low
 
   * Initial rdio packaging.

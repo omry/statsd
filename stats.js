@@ -7,6 +7,7 @@ var counters = {};
 var timers = {};
 var debugInt, flushInt, server, mgmtServer;
 var startup_time = Math.round(new Date().getTime() / 1000);
+var hostname = require("os").hostname().split(".").reverse().join(".");
 
 var stats = {
   graphite: {
@@ -18,6 +19,13 @@ var stats = {
     bad_lines_seen: 0,
   }
 };
+
+function create_key(pattern, key)
+{
+    tmp = pattern.replace("${hostname}",hostname)
+    tmp = tmp.replace("${key}", key)
+    return tmp
+}
 
 config.configFile(process.argv[2], function (config, oldConfig) {
   if (! config.debug && debugInt) {
@@ -31,6 +39,15 @@ config.configFile(process.argv[2], function (config, oldConfig) {
       sys.log("Counters:\n" + sys.inspect(counters) + "\nTimers:\n" + sys.inspect(timers));
     }, config.debugInterval || 10000);
   }
+
+  var stats_pattern         = config.stats_pattern          || "stats.${key}";
+  var statsd_pattern        = config.statsd_pattern         || "statsd.${key}";
+  var stats_count_pattern   = config.stats_count_pattern    || "stats_count.${key}";
+  var stats_timers_pattern  = config.stats_timers_pattern   || "stats.timers.${key}";
+  if (stats_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
+  if (stats_timers_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
+  if (statsd_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
+  if (stats_count_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
 
   if (server === undefined) {
     server = dgram.createSocket('udp4', function (msg, rinfo) {
@@ -141,8 +158,8 @@ config.configFile(process.argv[2], function (config, oldConfig) {
 
       for (key in counters) {
         var value = counters[key] / (flushInterval / 1000);
-        var message = 'stats.' + key + ' ' + value + ' ' + ts + "\n";
-        message += 'stats_counts.' + key + ' ' + counters[key] + ' ' + ts + "\n";
+        var message = create_key(stats_pattern, key) 	   + ' ' + value + ' ' + ts + "\n";
+        message    += create_key(stats_count_pattern, key) + ' ' + counters[key] + ' ' + ts + "\n";
         statString += message;
         counters[key] = 0;
 
@@ -178,18 +195,18 @@ config.configFile(process.argv[2], function (config, oldConfig) {
           timers[key] = [];
 
           var message = "";
-          message += 'stats.timers.' + key + '.mean ' + mean + ' ' + ts + "\n";
-          message += 'stats.timers.' + key + '.upper ' + max + ' ' + ts + "\n";
-          message += 'stats.timers.' + key + '.upper_' + pctThreshold + ' ' + maxAtThreshold + ' ' + ts + "\n";
-          message += 'stats.timers.' + key + '.lower ' + min + ' ' + ts + "\n";
-          message += 'stats.timers.' + key + '.count ' + count + ' ' + ts + "\n";
+          message += create_key(stats_timers_pattern, key) + '.mean ' + mean + ' ' + ts + "\n";
+          message += create_key(stats_timers_pattern ,key) + '.upper ' + max + ' ' + ts + "\n";
+          message += create_key(stats_timers_pattern ,key) + '.upper_' + pctThreshold + ' ' + maxAtThreshold + ' ' + ts + "\n";
+          message += create_key(stats_timers_pattern ,key) + '.lower ' + min + ' ' + ts + "\n";
+          message += create_key(stats_timers_pattern ,key) + '.count ' + count + ' ' + ts + "\n";
           statString += message;
 
           numStats += 1;
         }
       }
 
-      statString += 'statsd.numStats ' + numStats + ' ' + ts + "\n";
+      statString += create_key(statsd_pattern,"numStats") + ' + numStats + ' ' + ts + "\n";
       
       try {
         var graphite = net.createConnection(config.graphitePort, config.graphiteHost);
