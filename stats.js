@@ -42,12 +42,10 @@ config.configFile(process.argv[2], function (config, oldConfig) {
 
   var stats_pattern         = config.stats_pattern          || "stats.${key}";
   var statsd_pattern        = config.statsd_pattern         || "statsd.${key}";
-  var stats_count_pattern   = config.stats_count_pattern    || "stats_count.${key}";
   var stats_timers_pattern  = config.stats_timers_pattern   || "stats.timers.${key}";
   if (stats_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
   if (stats_timers_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
   if (statsd_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
-  if (stats_count_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
 
   if (server === undefined) {
     server = dgram.createSocket('udp4', function (msg, rinfo) {
@@ -159,7 +157,6 @@ config.configFile(process.argv[2], function (config, oldConfig) {
       for (key in counters) {
         var value = counters[key] / (flushInterval / 1000);
         var message = create_key(stats_pattern, key) 	   + ' ' + value + ' ' + ts + "\n";
-        message    += create_key(stats_count_pattern, key) + ' ' + counters[key] + ' ' + ts + "\n";
         statString += message;
         counters[key] = 0;
 

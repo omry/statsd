@@ -21,9 +21,8 @@ patterns:
     ${key}      : key provided by client library
 
   stats_pattern:		pattern used when creating user data keys, for example servers.${hostname}.${key}
-  stats_timers_pattern:	pattern used when creating timer keys, for example "servers.${hostname}.timers.${key}"
+  stats_timers_pattern:	pattern used when creating timer keys, for example "servers.${hostname}.${key}_timers"
   statsd_pattern:		pattern used when creating keys used for statsd statistics, for example "servers.${hostname}.statsd.${key}"
-  stats_count_pattern:	pattern used when creting keys used for stats counters, for example servers.${hostname}.stats_count.${key}
 
 */
 
@@ -34,5 +33,4 @@ patterns:
 , stats_pattern         : "servers.${hostname}.${key}"
 , stats_timers_pattern  : "servers.${hostname}.timers.${key}"
 , statsd_pattern        : "servers.${hostname}.statsd.${key}"
-, stats_count_pattern   : "servers.${hostname}.stats_count.${key}"
 }
