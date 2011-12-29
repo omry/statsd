@@ -1,3 +1,9 @@
+statsd (0.0.6) unstable; urgency=low
+
+  * removed stats_count support, I think its a waste of storage 
+
+ -- Omry Yadan <omry@face.com>  Wed, 28 Dec 2011 18:10:52 +0000
+
 statsd (0.0.4) unstable; urgency=low
 
   * Added support for configurable key patterns
