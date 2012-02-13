@@ -5,6 +5,7 @@ var dgram  = require('dgram')
 
 var counters = {};
 var timers = {};
+var gauges = {};
 var debugInt, flushInt, server, mgmtServer;
 var startup_time = Math.round(new Date().getTime() / 1000);
 var hostname = require("os").hostname().split(".").reverse().join(".");
@@ -36,7 +37,9 @@ config.configFile(process.argv[2], function (config, oldConfig) {
   if (config.debug) {
     if (debugInt !== undefined) { clearInterval(debugInt); }
     debugInt = setInterval(function () { 
-      sys.log("Counters:\n" + sys.inspect(counters) + "\nTimers:\n" + sys.inspect(timers));
+      sys.log("Counters:\n" + sys.inspect(counters) +
+	      "\nTimers:\n" + sys.inspect(timers) +
+	      "\nGauges:\n" + sys.inspect(gauges));
     }, config.debugInterval || 10000);
   }
 
@@ -73,7 +76,13 @@ config.configFile(process.argv[2], function (config, oldConfig) {
             timers[key] = [];
           }
           timers[key].push(Number(fields[0] || 0));
-        } else {
+        } else if(fields[1].trim() == "g") {
+          if (!gauges[key]) {
+            gauges[key] = [];
+          }
+          gauges[key].push(Number(fields[0] || 0));
+        }
+	else {
           if (fields[2] && fields[2].match(/^@([\d\.]+)/)) {
             sampleRate = Number(fields[2].match(/^@([\d\.]+)/)[1]);
           }
@@ -131,6 +140,10 @@ config.configFile(process.argv[2], function (config, oldConfig) {
             stream.write("END\n\n");
             break;
 
+          case "gauges":
+            stream.write(sys.inspect(gauges) + "\n");
+            stream.write("END\n\n");
+            break;
           case "quit":
             stream.end();
             break;
@@ -161,6 +174,20 @@ config.configFile(process.argv[2], function (config, oldConfig) {
         counters[key] = 0;
 
         numStats += 1;
+      }
+
+      for (key in gauges) {
+        var g = gauges[key];
+	if (g.length > 0)
+	{
+          var sum = 0;
+          for(var i=0;i<g.length;i++) sum += g[i];
+          var avg = sum / g.length;
+          numStats += 1;
+          var message = create_key(stats_pattern, key) + ' ' + avg + ' ' + ts + "\n";
+	  statString += message;
+          gauges[key] = [];
+	}
       }
 
       for (key in timers) {
@@ -204,7 +231,6 @@ config.configFile(process.argv[2], function (config, oldConfig) {
       }
 
       statString += create_key(statsd_pattern,"numStats") + ' ' + numStats + ' ' + ts + "\n";
-      
       try {
         var graphite = net.createConnection(config.graphitePort, config.graphiteHost);
         graphite.addListener('error', function(connectionException){
