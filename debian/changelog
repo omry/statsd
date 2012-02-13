@@ -1,3 +1,9 @@
+statsd (0.0.8) unstable; urgency=low
+
+  * initial support for gauge type (|g) 
+
+ -- Omry Yadan <omry@face.com>  Mon, 13 Feb 2012 12:05:12 +0000
+
 statsd (0.0.7) unstable; urgency=low
 
   * removed stats_count support, I think its a waste of storage 
