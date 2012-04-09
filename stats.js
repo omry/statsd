@@ -89,7 +89,11 @@ config.configFile(process.argv[2], function (config, oldConfig) {
           if (! counters[key]) {
             counters[key] = 0;
           }
-          counters[key] += Number(fields[0] || 1) * (1 / sampleRate);
+		  var num = Number(fields[0] || 1) * (1 / sampleRate);
+		  if (num > 0)
+	          counters[key] += num;
+		  else
+			sys.log('Negative value in counter: ' +key  +"=" + num);
         }
       }
 
@@ -104,7 +108,7 @@ config.configFile(process.argv[2], function (config, oldConfig) {
 
         switch(cmd) {
           case "help":
-            stream.write("Commands: stats, counters, timers, quit\n\n");
+            stream.write("Commands: stats, counters, timers, gauges, quit\n\n");
             break;
 
           case "stats":
