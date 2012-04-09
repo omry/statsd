@@ -1,4 +1,4 @@
-statsd (0.0.9) unstable; urgency=low
+statsd (0.0.10) unstable; urgency=low
 
   * added detection of negative values in counters 
 

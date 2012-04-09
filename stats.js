@@ -90,10 +90,7 @@ config.configFile(process.argv[2], function (config, oldConfig) {
             counters[key] = 0;
           }
 		  var num = Number(fields[0] || 1) * (1 / sampleRate);
-		  if (num > 0)
-	          counters[key] += num;
-		  else
-			sys.log('Negative value in counter: ' +key  +"=" + num);
+	      counters[key] += num;
         }
       }
 
@@ -182,16 +179,15 @@ config.configFile(process.argv[2], function (config, oldConfig) {
 
       for (key in gauges) {
         var g = gauges[key];
-	if (g.length > 0)
-	{
-          var sum = 0;
-          for(var i=0;i<g.length;i++) sum += g[i];
-          var avg = sum / g.length;
-          numStats += 1;
-          var message = create_key(stats_pattern, key) + ' ' + avg + ' ' + ts + "\n";
-	  statString += message;
-          gauges[key] = [];
-	}
+		if (g.length > 0){
+			var sum = 0;
+			for(var i=0;i<g.length;i++) sum += g[i];
+			var avg = sum / g.length;
+			numStats += 1;
+			var message = create_key(stats_pattern, key) + ' ' + avg + ' ' + ts + "\n";
+			statString += message;
+			gauges[key] = [];
+		}
       }
 
       for (key in timers) {
