@@ -50,6 +50,11 @@ config.configFile(process.argv[2], function (config, oldConfig) {
   if (stats_timers_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
   if (statsd_pattern.indexOf("${key}") == -1) throw "missing ${key} in pattern";
 
+  var flushInterval = Number(config.flushInterval || 10000);
+  sys.log("flush interval " + flushInterval);
+  var gaugeBuckets = flushInterval / 10000
+  sys.log("gauge buckets " + gaugeBuckets);
+
   if (server === undefined) {
     server = dgram.createSocket('udp4', function (msg, rinfo) {
       if (config.dumpMessages) { sys.log(msg.toString()); }
@@ -78,9 +83,12 @@ config.configFile(process.argv[2], function (config, oldConfig) {
           timers[key].push(Number(fields[0] || 0));
         } else if(fields[1].trim() == "g") {
           if (!gauges[key]) {
-            gauges[key] = [];
+			  gauges[key] = new Array(gaugeBuckets);
           }
-          gauges[key].push(Number(fields[0] || 0));
+   		  var sec = new Date().getSeconds()
+		  if (fields[0]){
+			  gauges[key][sec] = fields[0];
+		  }
         }
 	else {
           if (fields[2] && fields[2].match(/^@([\d\.]+)/)) {
@@ -157,10 +165,11 @@ config.configFile(process.argv[2], function (config, oldConfig) {
       });
     });
 
-    server.bind(config.port || 8125);
-    mgmtServer.listen(config.mgmt_port || 8126);
-
-    var flushInterval = Number(config.flushInterval || 10000);
+	var port = config.port || 8125
+	var mgmt_port = config.mgmt_port || 8126
+	sys.log("Binding to port " + port + ", management port " + mgmt_port)
+    server.bind(port);
+    mgmtServer.listen(mgmt_port);
 
     flushInt = setInterval(function () {
       var statString = '';
@@ -181,12 +190,22 @@ config.configFile(process.argv[2], function (config, oldConfig) {
         var g = gauges[key];
 		if (g.length > 0){
 			var sum = 0;
-			for(var i=0;i<g.length;i++) sum += g[i];
-			var avg = sum / g.length;
-			numStats += 1;
-			var message = create_key(stats_pattern, key) + ' ' + avg + ' ' + ts + "\n";
-			statString += message;
-			gauges[key] = [];
+			var num = 0;
+			for(var i=0;i<g.length;i++){
+				// this is important, if there is no sample in the bucket, don't increase the num
+				if (g[i] !=undefined){
+					sum += g[i]
+					num++
+				}
+			}
+
+			if (num > 0){
+				var avg = sum / num;
+				numStats += 1;
+				var message = create_key(stats_pattern, key) + ' ' + avg + ' ' + ts + "\n";
+				statString += message;
+				delete gauges[key]
+			}
 		}
       }
 
