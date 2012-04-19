@@ -87,7 +87,7 @@ config.configFile(process.argv[2], function (config, oldConfig) {
           }
    		  var sec = new Date().getSeconds()
 		  if (fields[0]){
-			  gauges[key][sec] = fields[0];
+			  gauges[key][sec] = parseFloat(fields[0])
 		  }
         }
 	else {
@@ -204,8 +204,8 @@ config.configFile(process.argv[2], function (config, oldConfig) {
 				numStats += 1;
 				var message = create_key(stats_pattern, key) + ' ' + avg + ' ' + ts + "\n";
 				statString += message;
-				delete gauges[key]
 			}
+			delete gauges[key]
 		}
       }
 

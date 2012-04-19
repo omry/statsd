@@ -1,6 +1,6 @@
-statsd (0.0.11) unstable; urgency=low
+statsd (0.0.13) unstable; urgency=low
 
-  * removed detection 
+  * Added buckets to gauge to prevent bias in case of inconsistent sample rate
 
  -- Omry Yadan <omry@face.com>  Mon, 09 Apr 2012 13:19:49 +0000
 
