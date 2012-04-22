@@ -87,7 +87,9 @@ config.configFile(process.argv[2], function (config, oldConfig) {
           }
    		  var sec = new Date().getSeconds()
 		  if (fields[0]){
-			  gauges[key][sec] = parseFloat(fields[0])
+			  var idx = Math.floor((sec / 60.0) * gaugeBuckets);
+			  //sys.log("gauge index " + sec + " -> " + idx);
+			  gauges[key][idx] = parseFloat(fields[0])
 		  }
         }
 	else {
